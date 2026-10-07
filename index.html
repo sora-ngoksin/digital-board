@@ -5,61 +5,54 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Digital Board Easy Editor - Portrait 1080x1920</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Tahoma,sans-serif;background:#eef3f8;color:#152238}
-.wrap{display:grid;grid-template-columns:minmax(320px,390px) 1fr;min-height:100vh}
-.editor{padding:24px;overflow:auto;background:#fff;box-shadow:3px 0 16px #0002;z-index:5;height:100vh}
-.editor h1{font-size:24px;margin:0 0 5px}.hint{font-size:13px;color:#65758b;margin-bottom:20px}
-.field{margin-bottom:14px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}
-.field input,.field textarea{width:100%;padding:10px;border:1px solid #cbd5df;border-radius:7px;font-size:15px}.field textarea{height:64px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btns{display:grid;gap:8px;margin-top:18px}
-button{border:0;padding:11px 14px;border-radius:7px;font-weight:700;cursor:pointer;background:#0067b8;color:#fff}button.secondary{background:#e8eef5;color:#17324d}
-.previewArea{min-width:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#dfe7ef;overflow:auto}
-.screen{position:relative;overflow:hidden;background:#071a33;width:min(calc((100vh - 48px) * .5625),calc(100vw - 438px));aspect-ratio:9/16;max-height:calc(100vh - 48px);box-shadow:0 15px 45px #16324d40}
-.slide{position:absolute;inset:0;display:flex;opacity:0;transition:opacity .8s ease;padding:9% 7%;align-items:center;justify-content:center;text-align:center;flex-direction:column}
-.slide.active{opacity:1;z-index:1}.blue{background:linear-gradient(165deg,#061b36 0%,#0067b8 72%,#1493d1 100%);color:#fff}.light{background:linear-gradient(165deg,#f6faff,#d8ebff);color:#123}.dark{background:linear-gradient(165deg,#061322,#19395b);color:#fff}
-.tag{font-size:clamp(13px,1.5vw,25px);letter-spacing:.28em;text-transform:uppercase;opacity:.75;margin-bottom:5%}
-.slide h1{font-size:clamp(32px,4vw,72px);margin:0 0 5%;line-height:1.1;max-width:95%}.slide h2{font-size:clamp(28px,3.5vw,62px);margin:0 0 5%;line-height:1.15}.slide p{font-size:clamp(18px,2vw,36px);margin:2%;line-height:1.4;max-width:90%}
-.company{color:#89d3ff;font-weight:700}.light .company{color:#0067b8}.date{margin-top:7%;font-size:clamp(16px,1.7vw,30px);opacity:.85}.logo{width:42%;max-height:16%;object-fit:contain;margin-bottom:7%;display:none;background:#fff;border-radius:14px;padding:3%}
-.progress{position:absolute;z-index:10;left:0;bottom:0;height:5px;background:#55b9ff;width:0}.counter{position:absolute;z-index:11;right:5%;bottom:2.3%;color:#fff;font-size:clamp(12px,1vw,18px);opacity:.65}
-.screen:fullscreen{width:100vw;height:100vh;max-height:none;aspect-ratio:auto;box-shadow:none}.screen:fullscreen .slide{padding:150px 75px}.screen:fullscreen .slide h1{font-size:92px}.screen:fullscreen .slide h2{font-size:72px}.screen:fullscreen .slide p{font-size:42px}.screen:fullscreen .tag{font-size:28px}.screen:fullscreen .date{font-size:34px}.screen:fullscreen .logo{width:420px;max-height:300px}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}.editor{height:auto}.previewArea{min-height:100vh}.screen{width:min(92vw,540px);max-height:none}}
+*{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;font-family:Arial,Tahoma,sans-serif;background:#eef3f8;color:#152238}.wrap{display:grid;grid-template-columns:minmax(340px,410px) 1fr;min-height:100vh}.editor{padding:22px;overflow:auto;background:#fff;box-shadow:3px 0 16px #0002;z-index:5;height:100vh}.editor h1{font-size:24px;margin:0 0 5px}.hint{font-size:13px;color:#65758b;margin-bottom:18px}.sectionTitle{font-size:14px;font-weight:800;color:#0067b8;border-top:1px solid #e5eaf0;padding-top:14px;margin:18px 0 10px}.field{margin-bottom:12px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}.field input,.field textarea,.field select{width:100%;padding:9px;border:1px solid #cbd5df;border-radius:7px;font-size:14px}.field textarea{height:60px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.btns{display:grid;gap:8px;margin-top:16px}button{border:0;padding:11px 14px;border-radius:7px;font-weight:700;cursor:pointer;background:#0067b8;color:#fff}button.secondary{background:#e8eef5;color:#17324d}.previewArea{min-width:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#dfe7ef;overflow:auto}.screen{position:relative;overflow:hidden;background:#071a33;width:min(calc((100vh - 48px)*.5625),calc(100vw - 458px));aspect-ratio:9/16;max-height:calc(100vh - 48px);box-shadow:0 15px 45px #16324d40}.slide{position:absolute;inset:0;display:flex;opacity:0;transition:opacity .8s ease;padding:9% 7%;align-items:center;justify-content:center;text-align:center;flex-direction:column}.slide.active{opacity:1;z-index:1}.blue{background:linear-gradient(165deg,#061b36 0%,#0067b8 72%,#1493d1 100%);color:#fff}.light{background:linear-gradient(165deg,#f6faff,#d8ebff);color:#123}.dark{background:linear-gradient(165deg,#061322,#19395b);color:#fff}.movable{position:relative;transform:translate(var(--x,0px),var(--y,0px));font-size:var(--fs)}.tag{--fs:25px;letter-spacing:.28em;text-transform:uppercase;opacity:.75;margin-bottom:5%}.welcomeTitle{--fs:72px;margin:0 0 5%;line-height:1.1;max-width:95%;font-weight:700}.company{--fs:36px;color:#89d3ff;font-weight:700;line-height:1.35}.date{--fs:30px;margin-top:7%;line-height:1.6;opacity:.9}.slideTitle{--fs:62px;margin:0 0 5%;line-height:1.15;font-weight:700}.slideBody{--fs:36px;line-height:1.4;max-width:90%}.logo{position:relative;transform:translate(var(--x,0px),var(--y,0px));width:var(--logoW,42%);max-height:18%;object-fit:contain;margin-bottom:7%;display:none;background:#fff;border-radius:14px;padding:3%}.progress{position:absolute;z-index:10;left:0;bottom:0;height:5px;background:#55b9ff;width:0}.counter{position:absolute;z-index:11;right:5%;bottom:2.3%;color:#fff;font-size:16px;opacity:.65}.screen:fullscreen,.screen:-webkit-full-screen{width:100vw;height:100vh;max-height:none;aspect-ratio:auto;box-shadow:none}.screen:fullscreen .slide,.screen:-webkit-full-screen .slide{padding:140px 70px}@media(max-width:900px){.wrap{grid-template-columns:1fr}.editor{height:auto}.previewArea{min-height:100vh}.screen{width:min(92vw,540px);max-height:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
- <aside class="editor">
-  <h1>Digital Board Editor</h1>
-  <div class="hint">ออกแบบสำหรับจอแนวตั้ง Full HD 1080 × 1920 (9:16)</div>
-  <div class="field"><label>ชื่อบริษัทผู้มาเยี่ยม</label><input id="companyInput" value="ABC Corporation"></div>
-  <div class="field"><label>ข้อความ Welcome</label><input id="welcomeInput" value="Welcome to Our Company"></div>
-  <div class="row"><div class="field"><label>วันที่</label><input id="dateInput" type="date" value="2026-10-07"></div><div class="field"><label>เวลา</label><input id="timeInput" type="time" value="09:00"></div></div>
-  <div class="field"><label>Logo บริษัทผู้มาเยี่ยม</label><input id="logoInput" type="file" accept="image/*"></div>
-  <div class="field"><label>Slide 2: หัวข้อ</label><input id="newsTitleInput" value="ข่าวสารบริษัท"></div>
-  <div class="field"><label>Slide 2: รายละเอียด</label><textarea id="newsTextInput">อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</textarea></div>
-  <div class="field"><label>Slide 3: ข้อความ Safety</label><textarea id="safetyInput">ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</textarea></div>
-  <div class="row"><div class="field"><label>Welcome (วินาที)</label><input class="duration" data-index="0" type="number" min="1" value="10"></div><div class="field"><label>News (วินาที)</label><input class="duration" data-index="1" type="number" min="1" value="10"></div><div class="field"><label>Safety (วินาที)</label><input class="duration" data-index="2" type="number" min="1" value="10"></div><div class="field"><label>Thank You (วินาที)</label><input class="duration" data-index="3" type="number" min="1" value="10"></div></div>
-  <div class="btns"><button id="fullscreenBtn">เปิด Full Screen 1080 × 1920</button><button class="secondary" id="resetBtn">เริ่ม Slide แรกใหม่</button></div>
-  <div class="hint" style="margin-top:16px">Preview ด้านขวารักษาสัดส่วน 9:16 และเมื่อเปิด Full Screen จะจัดองค์ประกอบสำหรับจอแนวตั้ง</div>
- </aside>
- <div class="previewArea">
-  <main class="screen" id="screen">
-   <section class="slide blue active"><img class="logo" id="visitorLogo"><div class="tag">Welcome</div><h1 id="welcomeText">Welcome to Our Company</h1><p class="company" id="companyText">ABC Corporation</p><div class="date"><span id="dateText">7 October 2026</span><br><span id="timeText">09:00</span></div></section>
-   <section class="slide light"><div class="tag">Company News</div><h2 id="newsTitle">ข่าวสารบริษัท</h2><p id="newsText">อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</p></section>
-   <section class="slide dark"><div class="tag">SAFETY FIRST</div><h2>Safety Announcement</h2><p id="safetyText">ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</p></section>
-   <section class="slide blue"><div class="tag">Thank You</div><h1>Have a great day</h1><p>Thank you for visiting our company.</p></section>
-   <div class="progress" id="progress"></div><div class="counter" id="counter"></div>
-  </main>
- </div>
-</div>
+<aside class="editor">
+<h1>Digital Board Easy Editor</h1><div class="hint">จอแนวตั้ง 1080 × 1920 (9:16) • ปรับขนาดและตำแหน่งข้อความได้แยกแต่ละส่วน</div>
+<div class="sectionTitle">ข้อมูล Welcome</div>
+<div class="field"><label>ชื่อบริษัทผู้มาเยี่ยม</label><input id="companyInput" value="ABC Corporation"></div>
+<div class="field"><label>ข้อความ Welcome</label><input id="welcomeInput" value="Welcome to Our Company"></div>
+<div class="row"><div class="field"><label>วันที่</label><input id="dateInput" type="date" value="2026-10-07"></div><div class="field"><label>เวลา</label><input id="timeInput" type="time" value="09:00"></div></div>
+<div class="field"><label>Logo บริษัทผู้มาเยี่ยม</label><input id="logoInput" type="file" accept="image/*"></div>
+<div class="sectionTitle">ปรับตำแหน่งและขนาด Slide 1</div>
+<div class="field"><label>Welcome: ขนาด / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="welcomeText" data-prop="fs" type="number" value="72"><input class="control" data-target="welcomeText" data-prop="x" type="number" value="0"><input class="control" data-target="welcomeText" data-prop="y" type="number" value="0"></div></div>
+<div class="field"><label>Company: ขนาด / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="companyText" data-prop="fs" type="number" value="36"><input class="control" data-target="companyText" data-prop="x" type="number" value="0"><input class="control" data-target="companyText" data-prop="y" type="number" value="0"></div></div>
+<div class="field"><label>วันที่/เวลา: ขนาด / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="dateBlock" data-prop="fs" type="number" value="30"><input class="control" data-target="dateBlock" data-prop="x" type="number" value="0"><input class="control" data-target="dateBlock" data-prop="y" type="number" value="0"></div></div>
+<div class="field"><label>Logo: ขนาด % / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="visitorLogo" data-prop="logoW" type="number" value="42"><input class="control" data-target="visitorLogo" data-prop="x" type="number" value="0"><input class="control" data-target="visitorLogo" data-prop="y" type="number" value="0"></div></div>
+<div class="sectionTitle">Slide 2 - Company News</div>
+<div class="field"><label>หัวข้อ</label><input id="newsTitleInput" value="ข่าวสารบริษัท"></div><div class="field"><label>รายละเอียด</label><textarea id="newsTextInput">อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</textarea></div>
+<div class="field"><label>หัวข้อ: ขนาด / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="newsTitle" data-prop="fs" type="number" value="62"><input class="control" data-target="newsTitle" data-prop="x" type="number" value="0"><input class="control" data-target="newsTitle" data-prop="y" type="number" value="0"></div></div>
+<div class="field"><label>รายละเอียด: ขนาด / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="newsText" data-prop="fs" type="number" value="36"><input class="control" data-target="newsText" data-prop="x" type="number" value="0"><input class="control" data-target="newsText" data-prop="y" type="number" value="0"></div></div>
+<div class="sectionTitle">Slide 3 - Safety</div>
+<div class="field"><label>ข้อความ Safety</label><textarea id="safetyInput">ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</textarea></div>
+<div class="field"><label>Safety: ขนาด / ซ้าย-ขวา / ขึ้น-ลง</label><div class="three"><input class="control" data-target="safetyText" data-prop="fs" type="number" value="36"><input class="control" data-target="safetyText" data-prop="x" type="number" value="0"><input class="control" data-target="safetyText" data-prop="y" type="number" value="0"></div></div>
+<div class="sectionTitle">เวลาแสดงผล</div>
+<div class="row"><div class="field"><label>Welcome (วินาที)</label><input class="duration" data-index="0" type="number" min="1" value="10"></div><div class="field"><label>News (วินาที)</label><input class="duration" data-index="1" type="number" min="1" value="10"></div><div class="field"><label>Safety (วินาที)</label><input class="duration" data-index="2" type="number" min="1" value="10"></div><div class="field"><label>Thank You (วินาที)</label><input class="duration" data-index="3" type="number" min="1" value="10"></div></div>
+<div class="btns"><button id="fullscreenBtn">▶ Full Screen Portrait</button><button class="secondary" id="resetLayoutBtn">รีเซ็ตตำแหน่ง/ขนาด</button><button class="secondary" id="resetSlideBtn">เริ่ม Slide แรกใหม่</button></div>
+<div class="hint" style="margin-top:14px">ช่องควบคุมเรียงเป็น: ขนาดตัวอักษร (px) • X (+ ไปขวา / - ไปซ้าย) • Y (+ ลง / - ขึ้น)</div>
+</aside>
+<div class="previewArea"><main class="screen" id="screen">
+<section class="slide blue active"><img class="logo" id="visitorLogo"><div class="tag movable">Welcome</div><h1 class="welcomeTitle movable" id="welcomeText">Welcome to Our Company</h1><p class="company movable" id="companyText">ABC Corporation</p><div class="date movable" id="dateBlock"><span id="dateText">7 October 2026</span><br><span id="timeText">09:00</span></div></section>
+<section class="slide light"><div class="tag movable">Company News</div><h2 class="slideTitle movable" id="newsTitle">ข่าวสารบริษัท</h2><p class="slideBody movable" id="newsText">อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</p></section>
+<section class="slide dark"><div class="tag movable">SAFETY FIRST</div><h2 class="slideTitle movable">Safety Announcement</h2><p class="slideBody movable" id="safetyText">ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</p></section>
+<section class="slide blue"><div class="tag movable">Thank You</div><h1 class="welcomeTitle movable">Have a great day</h1><p class="slideBody movable">Thank you for visiting our company.</p></section>
+<div class="progress" id="progress"></div><div class="counter" id="counter"></div></main></div></div>
 <script>
-const slides=[...document.querySelectorAll('.slide')],progress=document.getElementById('progress'),counter=document.getElementById('counter');let durations=[10000,10000,10000,10000],current=0,timer;const $=id=>document.getElementById(id);
+const $=id=>document.getElementById(id);const slides=[...document.querySelectorAll('.slide')];const progress=$('progress'),counter=$('counter');let durations=[10000,10000,10000,10000],current=0,timer;
 function formatDate(v){if(!v)return '';const [y,m,d]=v.split('-').map(Number);return new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d));}
 function show(i){clearTimeout(timer);current=i;slides.forEach((s,n)=>s.classList.toggle('active',n===i));counter.textContent=`${i+1} / ${slides.length}`;progress.style.transition='none';progress.style.width='0';requestAnimationFrame(()=>requestAnimationFrame(()=>{progress.style.transition=`width ${durations[i]}ms linear`;progress.style.width='100%'}));timer=setTimeout(()=>show((i+1)%slides.length),durations[i]);}
 $('companyInput').oninput=e=>$('companyText').textContent=e.target.value;$('welcomeInput').oninput=e=>$('welcomeText').textContent=e.target.value;$('dateInput').oninput=e=>$('dateText').textContent=formatDate(e.target.value);$('timeInput').oninput=e=>$('timeText').textContent=e.target.value;$('newsTitleInput').oninput=e=>$('newsTitle').textContent=e.target.value;$('newsTextInput').oninput=e=>$('newsText').textContent=e.target.value;$('safetyInput').oninput=e=>$('safetyText').textContent=e.target.value;
 $('logoInput').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('visitorLogo').src=r.result;$('visitorLogo').style.display='block'};r.readAsDataURL(f)};
+function applyControl(input){const target=$(input.dataset.target),prop=input.dataset.prop,v=Number(input.value)||0;if(prop==='fs')target.style.setProperty('--fs',v+'px');else if(prop==='logoW')target.style.setProperty('--logoW',v+'%');else target.style.setProperty('--'+prop,v+'px');}
+document.querySelectorAll('.control').forEach(el=>{el.oninput=()=>applyControl(el);applyControl(el)});
 document.querySelectorAll('.duration').forEach(el=>el.onchange=e=>{const i=+e.target.dataset.index;durations[i]=Math.max(1,+e.target.value||1)*1000;if(i===current)show(current)});
-$('resetBtn').onclick=()=>show(0);$('fullscreenBtn').onclick=()=>{const el=$('screen');if(el.requestFullscreen)el.requestFullscreen();show(0)};$('dateText').textContent=formatDate($('dateInput').value);show(0);
+$('resetSlideBtn').onclick=()=>show(0);
+$('resetLayoutBtn').onclick=()=>{const defaults={welcomeText:[72,0,0],companyText:[36,0,0],dateBlock:[30,0,0],visitorLogo:[42,0,0],newsTitle:[62,0,0],newsText:[36,0,0],safetyText:[36,0,0]};document.querySelectorAll('.control').forEach(el=>{const vals=defaults[el.dataset.target];if(!vals)return;const idx=el.dataset.prop==='fs'||el.dataset.prop==='logoW'?0:el.dataset.prop==='x'?1:2;el.value=vals[idx];applyControl(el)});};
+$('fullscreenBtn').onclick=async()=>{const el=$('screen');try{if(el.requestFullscreen)await el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();try{if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('portrait');}catch(e){console.log('Portrait lock unavailable',e)}}catch(e){console.log('Fullscreen unavailable',e)}show(0)};
+$('dateText').textContent=formatDate($('dateInput').value);show(0);
 </script>
 </body>
 </html>
