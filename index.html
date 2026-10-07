@@ -1,88 +1,33 @@
+Use the existing Digital Board Easy Editor page as the base. Add project persistence controls without changing the existing slide/media editing behavior.
 
+Required additions:
+1. Add buttons near the bottom toolbar:
+   - "💾 บันทึกโปรเจกต์" id="saveProject"
+   - "📂 โหลดโปรเจกต์" id="loadProject"
+   - hidden <input type="file" id="projectFile" accept="application/json,.json">
+2. Add autosave to localStorage under key "digitalBoardStudioProjectV1" whenever slides are materially changed, and restore it at page initialization when valid data exists.
+3. Save Project downloads a JSON file named digital-board-project.json containing version, canvas {width:1080,height:1920}, slides, activeSlide, and savedAt.
+4. Load Project lets the user choose that JSON and restores slides, activeSlide, IDs, background colors/images, durations, text styling/positions, image/video/audio data URLs, and all slide order.
+5. Validate parsed JSON before applying it. At minimum require project.slides to be a non-empty array. On invalid JSON show alert("ไฟล์โปรเจกต์ไม่ถูกต้อง").
+6. After load call render().
+7. Add a small status line id="saveStatus" showing "บันทึกในเครื่องแล้ว" after autosave and "โหลดโปรเจกต์แล้ว" after a loaded project.
+8. Keep Full Screen, drag/drop, add/remove/duplicate/reorder slide, background, text color, image/video/audio insertion behavior intact.
 
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Digital Board Easy Editor - Portrait 1080x1920</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;min-height:100%;font-family:Arial,Tahoma,sans-serif;background:#eef3f8;color:#152238}.wrap{display:grid;grid-template-columns:410px 1fr;min-height:100vh}.editor{padding:20px;overflow:auto;background:#fff;box-shadow:3px 0 16px #0002;height:100vh;z-index:10}.editor h1{margin:0 0 4px;font-size:23px}.hint{font-size:12px;color:#67778b;margin-bottom:14px}.section{border-top:1px solid #e2e8ef;padding-top:12px;margin-top:15px}.section h3{font-size:14px;color:#0067b8;margin:0 0 10px}.field{margin-bottom:10px}.field label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}.field input,.field textarea,.field select{width:100%;padding:8px;border:1px solid #cbd5df;border-radius:6px;font-size:13px}.field textarea{height:54px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.four{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.four input{min-width:0}.mini{font-size:10px;color:#7a8796;margin-top:3px}.buttons{display:grid;gap:7px;margin-top:14px}button{border:0;padding:11px;border-radius:7px;font-weight:700;cursor:pointer;background:#0067b8;color:#fff}button.secondary{background:#e8eef5;color:#17324d}.previewArea{display:flex;align-items:center;justify-content:center;padding:24px;background:#dfe7ef;overflow:auto;min-width:0}.screen{position:relative;overflow:hidden;background:#071a33;width:min(calc((100vh - 48px)*.5625),calc(100vw - 460px));aspect-ratio:9/16;max-height:calc(100vh - 48px);box-shadow:0 15px 45px #16324d40}.slide{position:absolute;inset:0;opacity:0;transition:opacity .7s ease;overflow:hidden}.slide.active{opacity:1;z-index:2}.blue{background:linear-gradient(165deg,#061b36 0%,#0067b8 72%,#1493d1 100%);color:white}.light{background:linear-gradient(165deg,#f6faff,#d8ebff);color:#123}.dark{background:linear-gradient(165deg,#061322,#19395b);color:white}.item{position:absolute;left:50%;top:50%;width:86%;text-align:center;transform:translate(calc(-50% + var(--x,0px)),calc(-50% + var(--y,0px)));font-size:var(--fs,36px);line-height:1.25;z-index:3;white-space:pre-wrap}.item.title{font-weight:700}.item.accent{color:#89d3ff;font-weight:700}.item.tag{letter-spacing:.22em;text-transform:uppercase;opacity:.78}.slideImage{position:absolute;left:50%;top:50%;transform:translate(calc(-50% + var(--x,0px)),calc(-50% + var(--y,0px)));width:var(--w,42%);height:auto;max-height:38%;object-fit:contain;display:none;z-index:2}.withBg{background:#fff;border-radius:14px;padding:16px}.progress{position:absolute;z-index:20;left:0;bottom:0;height:5px;background:#55b9ff;width:0}.counter{position:absolute;z-index:21;right:4%;bottom:1.8%;color:#fff;font-size:14px;opacity:.65}.screen:fullscreen,.screen:-webkit-full-screen{width:100vw;height:100vh;max-height:none;aspect-ratio:auto;box-shadow:none}@media(max-width:900px){.wrap{grid-template-columns:1fr}.editor{height:auto}.screen{width:min(92vw,540px);max-height:none}.previewArea{min-height:100vh}}
-</style>
-</head>
-<body>
-<div class="wrap"><aside class="editor">
-<h1>Digital Board Easy Editor</h1><div class="hint">Portrait 1080 × 1920 • ทุกสไลด์ปรับข้อความ ตำแหน่ง ขนาด และรูปได้</div>
+Implementation snippets to integrate:
 
+HTML controls:
+<div class="sec"><h3>โปรเจกต์</h3><div class="toolbar"><button id="saveProject">💾 บันทึกโปรเจกต์</button><button id="loadProject" class="secondary">📂 โหลดโปรเจกต์</button></div><input id="projectFile" type="file" accept="application/json,.json" hidden><div id="saveStatus" class="hint" style="margin-top:7px"></div></div>
 
-<div class="section"><h3>Slide 1 • Welcome</h3>
-<div class="field"><label>ข้อความ Welcome</label><input id="s1titleInput" value="Welcome to Our Company"></div>
-<div class="field"><label>ชื่อบริษัทผู้มาเยี่ยม</label><input id="s1companyInput" value="ABC Corporation"></div>
-<div class="row"><div class="field"><label>วันที่</label><input id="dateInput" type="date" value="2026-10-07"></div><div class="field"><label>รูปแบบเวลา</label><select id="timeMode"><option value="clock">เวลาตามนาฬิกา</option><option value="fixed">Fix เวลา</option></select></div></div>
-<div class="field" id="fixedTimeBox" style="display:none"><label>Fix เวลา</label><input id="fixedTimeInput" type="time" value="09:00"></div>
-<div class="field"><label>Logo / รูป Slide 1</label><input id="s1imgInput" type="file" accept="image/*"></div>
-<div id="controls1"></div></div>
+JavaScript functions:
+const PROJECT_KEY='digitalBoardStudioProjectV1';
+function projectData(){return {version:1,canvas:{width:1080,height:1920},slides,activeSlide,savedAt:new Date().toISOString()}}
+function recomputeIdSeq(){let max=0;slides.forEach(s=>{max=Math.max(max,Number(s.id)||0);(s.elements||[]).forEach(e=>{const n=Number(String(e.id||'').replace(/\D/g,''))||0;max=Math.max(max,n)})});idSeq=max+1}
+function validProject(p){return p&&Array.isArray(p.slides)&&p.slides.length>0}
+function autosave(){try{localStorage.setItem(PROJECT_KEY,JSON.stringify(projectData()));$('saveStatus').textContent='บันทึกในเครื่องแล้ว'}catch(e){console.warn('Autosave unavailable',e)}}
+function restoreLocal(){try{const raw=localStorage.getItem(PROJECT_KEY);if(!raw)return false;const p=JSON.parse(raw);if(!validProject(p))return false;slides=p.slides;activeSlide=Math.min(Math.max(0,Number(p.activeSlide)||0),slides.length-1);selectedId=null;recomputeIdSeq();return true}catch(e){return false}}
+function downloadProject(){const blob=new Blob([JSON.stringify(projectData(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='digital-board-project.json';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);$('saveStatus').textContent='ดาวน์โหลดไฟล์โปรเจกต์แล้ว'}
+$('saveProject').onclick=downloadProject;
+$('loadProject').onclick=()=>$('projectFile').click();
+$('projectFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result);if(!validProject(p))throw new Error('bad project');slides=p.slides;activeSlide=Math.min(Math.max(0,Number(p.activeSlide)||0),slides.length-1);selectedId=null;recomputeIdSeq();autosave();render();$('saveStatus').textContent='โหลดโปรเจกต์แล้ว'}catch(err){alert('ไฟล์โปรเจกต์ไม่ถูกต้อง')}};r.readAsText(f);e.target.value=''};
 
-
-<div class="section"><h3>Slide 2 • Company News</h3><div class="field"><label>หัวข้อ</label><input id="s2titleInput" value="ข่าวสารบริษัท"></div><div class="field"><label>รายละเอียด</label><textarea id="s2bodyInput">อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</textarea></div><div class="field"><label>รูป Slide 2</label><input id="s2imgInput" type="file" accept="image/*"></div><div id="controls2"></div></div>
-
-
-<div class="section"><h3>Slide 3 • Safety</h3><div class="field"><label>หัวข้อ</label><input id="s3titleInput" value="Safety Announcement"></div><div class="field"><label>รายละเอียด</label><textarea id="s3bodyInput">ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</textarea></div><div class="field"><label>รูป Slide 3</label><input id="s3imgInput" type="file" accept="image/*"></div><div id="controls3"></div></div>
-
-
-<div class="section"><h3>Slide 4 • Thank You</h3><div class="field"><label>หัวข้อ</label><input id="s4titleInput" value="Have a great day"></div><div class="field"><label>รายละเอียด</label><textarea id="s4bodyInput">Thank you for visiting our company.</textarea></div><div class="field"><label>รูป Slide 4</label><input id="s4imgInput" type="file" accept="image/*"></div><div id="controls4"></div></div>
-
-
-<div class="section"><h3>เวลาแสดงแต่ละสไลด์</h3><div class="four"><input class="duration" data-index="0" type="number" min="1" value="10" title="Slide 1"><input class="duration" data-index="1" type="number" min="1" value="10" title="Slide 2"><input class="duration" data-index="2" type="number" min="1" value="10" title="Slide 3"><input class="duration" data-index="3" type="number" min="1" value="10" title="Slide 4"></div><div class="mini">Slide 1 / 2 / 3 / 4 หน่วยเป็นวินาที</div></div>
-<div class="buttons"><button id="fullscreenBtn">▶ Full Screen Portrait</button><button class="secondary" id="resetBtn">เริ่ม Slide 1 ใหม่</button></div>
-</aside>
-
-
-<div class="previewArea"><main class="screen" id="screen">
-<section class="slide blue active"><img id="s1img" class="slideImage withBg"><div id="s1tag" class="item tag">WELCOME</div><div id="s1title" class="item title">Welcome to Our Company</div><div id="s1company" class="item accent">ABC Corporation</div><div id="s1date" class="item">7 October 2026</div><div id="s1time" class="item">09:00:00</div></section>
-<section class="slide light"><img id="s2img" class="slideImage"><div id="s2tag" class="item tag">COMPANY NEWS</div><div id="s2title" class="item title">ข่าวสารบริษัท</div><div id="s2body" class="item">อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</div></section>
-<section class="slide dark"><img id="s3img" class="slideImage"><div id="s3tag" class="item tag">SAFETY FIRST</div><div id="s3title" class="item title">Safety Announcement</div><div id="s3body" class="item">ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</div></section>
-<section class="slide blue"><img id="s4img" class="slideImage"><div id="s4tag" class="item tag">THANK YOU</div><div id="s4title" class="item title">Have a great day</div><div id="s4body" class="item">Thank you for visiting our company.</div></section>
-<div class="progress" id="progress"></div><div class="counter" id="counter"></div></main></div></div>
-<script>
-const $=id=>document.getElementById(id),slides=[...document.querySelectorAll('.slide')];let durations=[10000,10000,10000,10000],current=0,timer;const progress=$('progress'),counter=$('counter');
-const defaults={s1tag:[25,0,-390],s1img:[42,0,-240],s1title:[72,0,-40],s1company:[40,0,100],s1date:[30,0,225],s1time:[32,0,290],s2tag:[25,0,-390],s2img:[45,0,-220],s2title:[62,0,40],s2body:[36,0,180],s3tag:[25,0,-390],s3img:[45,0,-220],s3title:[62,0,40],s3body:[36,0,180],s4tag:[25,0,-390],s4img:[45,0,-220],s4title:[72,0,40],s4body:[36,0,180]};
-function controlHTML(id,label,isImage=false){const d=defaults[id];return `<div class="field"><label>${label}: ${isImage?'ขนาด %':'ขนาด px'} / X / Y</label><div class="four"><input class="ctl" data-target="${id}" data-prop="${isImage?'w':'fs'}" type="number" value="${d[0]}"><input class="ctl" data-target="${id}" data-prop="x" type="number" value="${d[1]}"><input class="ctl" data-target="${id}" data-prop="y" type="number" value="${d[2]}"><button class="secondary resetOne" data-target="${id}" type="button">↺</button></div></div>`}
-$('controls1').innerHTML=controlHTML('s1tag','WELCOME')+controlHTML('s1img','Logo/รูป',true)+controlHTML('s1title','Welcome')+controlHTML('s1company','ชื่อบริษัท')+controlHTML('s1date','วันที่')+controlHTML('s1time','เวลา');
-$('controls2').innerHTML=controlHTML('s2tag','COMPANY NEWS')+controlHTML('s2img','รูป',true)+controlHTML('s2title','หัวข้อ')+controlHTML('s2body','รายละเอียด');
-$('controls3').innerHTML=controlHTML('s3tag','SAFETY FIRST')+controlHTML('s3img','รูป',true)+controlHTML('s3title','หัวข้อ')+controlHTML('s3body','รายละเอียด');
-$('controls4').innerHTML=controlHTML('s4tag','THANK YOU')+controlHTML('s4img','รูป',true)+controlHTML('s4title','หัวข้อ')+controlHTML('s4body','รายละเอียด');
-function applyCtl(el){const t=$(el.dataset.target),p=el.dataset.prop,v=Number(el.value)||0;if(p==='fs')t.style.setProperty('--fs',v+'px');else if(p==='w')t.style.setProperty('--w',v+'%');else t.style.setProperty('--'+p,v+'px')}
-function syncControl(target,prop,value){const el=document.querySelector(`.ctl[data-target="${target}"][data-prop="${prop}"]`);if(el){el.value=Math.round(value);applyCtl(el)}}
-document.querySelectorAll('.ctl').forEach(e=>{e.oninput=()=>applyCtl(e);applyCtl(e)});
-
-
-// Drag & drop ทุกข้อความและรูปด้วยเมาส์/นิ้ว
-let drag=null;
-function beginDrag(e){
- const node=e.currentTarget;
- if(!node.id)return;
- e.preventDefault();
- const xCtl=document.querySelector(`.ctl[data-target="${node.id}"][data-prop="x"]`);
- const yCtl=document.querySelector(`.ctl[data-target="${node.id}"][data-prop="y"]`);
- drag={node,startX:e.clientX,startY:e.clientY,baseX:Number(xCtl?.value)||0,baseY:Number(yCtl?.value)||0};
- node.setPointerCapture?.(e.pointerId);
-}
-function moveDrag(e){
- if(!drag)return;
- const rect=$('screen').getBoundingClientRect();
- const scaleX=1080/rect.width, scaleY=1920/rect.height;
- const nx=drag.baseX+(e.clientX-drag.startX)*scaleX;
- const ny=drag.baseY+(e.clientY-drag.startY)*scaleY;
- syncControl(drag.node.id,'x',nx);syncControl(drag.node.id,'y',ny);
-}
-function endDrag(e){if(!drag)return;drag.node.releasePointerCapture?.(e.pointerId);drag=null}
-document.querySelectorAll('.item,.slideImage').forEach(node=>{node.style.cursor='move';node.style.touchAction='none';node.addEventListener('pointerdown',beginDrag);node.addEventListener('pointermove',moveDrag);node.addEventListener('pointerup',endDrag);node.addEventListener('pointercancel',endDrag)});document.querySelectorAll('.resetOne').forEach(b=>b.onclick=()=>{const id=b.dataset.target,d=defaults[id];document.querySelectorAll(`.ctl[data-target="${id}"]`).forEach(e=>{e.value=e.dataset.prop==='fs'||e.dataset.prop==='w'?d[0]:e.dataset.prop==='x'?d[1]:d[2];applyCtl(e)})});
-function bindText(input,target){$(input).oninput=e=>$(target).textContent=e.target.value}bindText('s1titleInput','s1title');bindText('s1companyInput','s1company');bindText('s2titleInput','s2title');bindText('s2bodyInput','s2body');bindText('s3titleInput','s3title');bindText('s3bodyInput','s3body');bindText('s4titleInput','s4title');bindText('s4bodyInput','s4body');
-function bindImage(input,target){$(input).onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$(target).src=r.result;$(target).style.display='block'};r.readAsDataURL(f)}}bindImage('s1imgInput','s1img');bindImage('s2imgInput','s2img');bindImage('s3imgInput','s3img');bindImage('s4imgInput','s4img');
-function formatDate(v){if(!v)return '';const [y,m,d]=v.split('-').map(Number);return new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d))}$('dateInput').oninput=e=>$('s1date').textContent=formatDate(e.target.value);$('s1date').textContent=formatDate($('dateInput').value);
-function updateTime(){if($('timeMode').value==='fixed'){$('s1time').textContent=$('fixedTimeInput').value}else{$('s1time').textContent=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}}$('timeMode').onchange=()=>{$('fixedTimeBox').style.display=$('timeMode').value==='fixed'?'block':'none';updateTime()};$('fixedTimeInput').oninput=updateTime;setInterval(updateTime,1000);updateTime();
-function show(i){clearTimeout(timer);current=i;slides.forEach((s,n)=>s.classList.toggle('active',n===i));counter.textContent=`${i+1} / ${slides.length}`;progress.style.transition='none';progress.style.width='0';requestAnimationFrame(()=>requestAnimationFrame(()=>{progress.style.transition=`width ${durations[i]}ms linear`;progress.style.width='100%'}));timer=setTimeout(()=>show((i+1)%slides.length),durations[i])}document.querySelectorAll('.duration').forEach(e=>e.onchange=()=>{const i=+e.dataset.index;durations[i]=Math.max(1,+e.value||1)*1000;if(i===current)show(current)});$('resetBtn').onclick=()=>show(0);
-$('fullscreenBtn').onclick=async()=>{const el=$('screen');try{if(el.requestFullscreen)await el.requestFullscreen();else if(el.webkitRequestFullscreen)el.webkitRequestFullscreen();try{if(screen.orientation&&screen.orientation.lock)await screen.orientation.lock('portrait')}catch(e){console.log('Portrait lock unavailable',e)}}catch(e){console.log('Fullscreen unavailable',e)}show(0)};show(0);
-</script>
-</body></html>
+Integrate autosave() after slide/content mutations. On startup call restoreLocal() before render().
