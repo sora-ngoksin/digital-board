@@ -2,119 +2,26 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-
-<title>Digital Board Player 9:16</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Digital Board Diagnostic Player</title>
 <style>
-*{
-  box-sizing:border-box;
-}
-
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000;
-  font-family:Arial,Tahoma,sans-serif;
-}
-
-#stageWrap{
-  position:absolute;
-  inset:0;
-  overflow:hidden;
-  background:#000;
-}
-
-#stage{
-  position:absolute;
-  width:1080px;
-  height:1920px;
-  left:0;
-  top:0;
-  transform-origin:0 0;
-  background:#071a33;
-  overflow:hidden;
-}
-
-.slide{
-  position:absolute;
-  left:0;
-  top:0;
-  width:1080px;
-  height:1920px;
-  display:none;
-  background-size:cover;
-  background-position:center;
-}
-
-.slide.active{
-  display:block;
-}
-
-.el{
-  position:absolute;
-  left:50%;
-  top:50%;
-  z-index:3;
-}
-
-.textEl{
-  white-space:pre-wrap;
-  line-height:1.25;
-}
-
-.imageEl,
-.videoEl{
-  max-height:70%;
-  object-fit:contain;
-}
-
-.status{
-  position:fixed;
-  z-index:9999;
-  left:8px;
-  top:8px;
-  padding:6px 9px;
-  border-radius:6px;
-  background:rgba(0,0,0,.65);
-  color:#fff;
-  font-size:12px;
-}
-
-.ok{
-  color:#7ee787;
-}
-
-.bad{
-  color:#ff8b8b;
-}
-
-.progress{
-  position:fixed;
-  left:0;
-  bottom:0;
-  width:0;
-  height:5px;
-  background:#55b9ff;
-  z-index:9998;
-}
-
-.counter{
-  position:fixed;
-  right:3%;
-  bottom:2%;
-  z-index:9998;
-  color:#fff;
-  font-size:14px;
-  opacity:.7;
-}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#202020;font-family:Arial,Tahoma,sans-serif}#frame{position:absolute;background:#0067b8;overflow:hidden}#stage{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:0 0;-webkit-transform-origin:0 0}.slide{position:absolute;left:0;top:0;width:1080px;height:1920px;display:none;background-color:#0067b8;background-size:cover;background-position:center}.slide.active{display:block}.el{position:absolute;left:540px;top:960px;z-index:3}.textEl{white-space:pre-wrap}.diag{position:fixed;z-index:99999;left:8px;top:8px;max-width:92%;padding:8px 10px;background:#fff;color:#111;font-size:14px;border:2px solid #ffcc00}.progress{position:fixed;z-index:99998;left:0;bottom:0;height:6px;background:#55b9ff}.counter{position:fixed;z-index:99998;right:12px;bottom:12px;color:#fff;font-size:16px}
 </style>
 </head>
-
 <body>
-
-<div id="stageWrap">
-  <main
+<div id="frame"><div id="stage"></div></div>
+<div id="diag" class="diag">BOOT 1</div><div id="progress" class="progress"></div><div id="counter" class="counter"></div>
+<script>
+(function(){
+var URL='./digital-board-v2-project.json';
+var W=1080,H=1920,data=null,active=0,timer=null,last='';
+var frame=document.getElementById('frame'),stage=document.getElementById('stage'),diag=document.getElementById('diag'),progress=document.getElementById('progress'),counter=document.getElementById('counter');
+function fit(){var vw=window.innerWidth||document.documentElement.clientWidth||1080;var vh=window.innerHeight||document.documentElement.clientHeight||1920;var scale=Math.min(vw/W,vh/H);var sw=Math.round(W*scale),sh=Math.round(H*scale);frame.style.width=sw+'px';frame.style.height=sh+'px';frame.style.left=Math.round((vw-sw)/2)+'px';frame.style.top=Math.round((vh-sh)/2)+'px';stage.style.transform='scale('+scale+')';stage.style.webkitTransform='scale('+scale+')';diag.innerHTML='BOOT OK | viewport '+vw+'x'+vh+' | scale '+scale.toFixed(3)}
+function make(e){var n;if(e.type==='text'){n=document.createElement('div');n.className='el textEl';n.innerHTML='';n.appendChild(document.createTextNode(e.text||''));n.style.width=Math.round(W*((e.tw||86)/100))+'px';n.style.textAlign=e.align||'center';n.style.color=e.color||'#fff';n.style.fontFamily=e.font||'Arial';n.style.fontSize=(e.fs||40)+'px';n.style.fontWeight=e.weight||400;n.style.fontStyle=e.style||'normal';n.style.textDecoration=e.deco||'none';n.style.lineHeight=e.lh||1.25;n.style.letterSpacing=(e.ls||0)+'px'}else if(e.type==='image'){n=document.createElement('img');n.className='el';n.src=e.src||'';n.style.width=Math.round(W*((e.w||45)/100))+'px';n.style.maxHeight='1344px'}else if(e.type==='video'){n=document.createElement('video');n.className='el';n.src=e.src||'';n.style.width=Math.round(W*((e.w||45)/100))+'px';n.autoplay=true;n.loop=true;n.muted=true;n.setAttribute('playsinline','playsinline')}else{n=document.createElement('audio');n.className='el';n.src=e.src||''}var x=e.x||0,y=e.y||0;n.style.transform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';n.style.webkitTransform='translate(-50%,-50%) translate('+x+'px,'+y+'px)';n.style.zIndex=e.z||3;return n}
+function render(){if(!data||!data.slides||!data.slides.length)return;if(timer)clearTimeout(timer);while(stage.firstChild)stage.removeChild(stage.firstChild);for(var i=0;i<data.slides.length;i++){var s=data.slides[i],d=document.createElement('div');d.className='slide'+(i===active?' active':'');d.style.backgroundColor=s.bg||'#0067b8';if(s.bgImage)d.style.backgroundImage='url('+s.bgImage+')';var a=s.elements||[];for(var j=0;j<a.length;j++){if(!a[j].hidden)d.appendChild(make(a[j]))}stage.appendChild(d)}var elems=(data.slides[active].elements||[]).length;diag.innerHTML='ONLINE | viewport '+window.innerWidth+'x'+window.innerHeight+' | slides '+data.slides.length+' | slide '+(active+1)+' | elements '+elems+' | bg '+(data.slides[active].bg||'none');counter.innerHTML=(active+1)+' / '+data.slides.length;var sec=parseInt(data.slides[active].duration,10)||10;progress.style.transition='none';progress.style.width='0';setTimeout(function(){progress.style.transition='width '+sec+'s linear';progress.style.width='100%'},50);timer=setTimeout(function(){active=(active+1)%data.slides.length;render()},sec*1000)}
+function load(){diag.innerHTML='LOADING JSON...';var x=new XMLHttpRequest();x.open('GET',URL+'?t='+new Date().getTime(),true);x.onreadystatechange=function(){if(x.readyState!==4)return;if(x.status>=200&&x.status<300){try{var n=JSON.parse(x.responseText);if(!n.slides||!n.slides.length)throw new Error('No slides');var v=n.savedAt||String(x.responseText.length);if(v!==last){data=n;last=v;active=0;render()}}catch(e){diag.innerHTML='JSON ERROR: '+e.message}}else{diag.innerHTML='HTTP ERROR: '+x.status}};x.onerror=function(){diag.innerHTML='NETWORK ERROR'};x.send(null)}
+fit();window.onresize=fit;load();setInterval(load,15000);
+})();
+</script>
+</body>
+</html>
