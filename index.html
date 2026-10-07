@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Board Loop Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; font-family: Arial, Tahoma, sans-serif; background: #071a33; color: white; }
+    .slide { position: absolute; inset: 0; display: flex; opacity: 0; transition: opacity .8s ease; padding: 70px; }
+    .slide.active { opacity: 1; z-index: 1; }
+    .center { align-items: center; justify-content: center; text-align: center; flex-direction: column; }
+    .blue { background: linear-gradient(135deg,#061b36,#0067b8); }
+    .light { background: linear-gradient(135deg,#f4f8fc,#dcecff); color: #123; }
+    .dark { background: linear-gradient(135deg,#061322,#19395b); }
+    .tag { font-size: 24px; letter-spacing: 5px; text-transform: uppercase; opacity: .75; margin-bottom: 24px; }
+    h1 { font-size: clamp(52px,7vw,110px); margin: 0 0 20px; line-height: 1.05; }
+    h2 { font-size: clamp(38px,5vw,78px); margin: 0 0 25px; }
+    p { font-size: clamp(24px,2.5vw,42px); margin: 8px 0; }
+    .company { color: #79c6ff; }
+    .light .company { color: #0067b8; }
+    .date { margin-top: 42px; font-size: 28px; opacity: .8; }
+    .badge { border: 2px solid rgba(255,255,255,.6); border-radius: 40px; padding: 12px 28px; font-size: 24px; margin-bottom: 30px; }
+    .progress { position: fixed; z-index: 10; left: 0; bottom: 0; height: 6px; background: #55b9ff; width: 0; }
+    .counter { position: fixed; z-index: 11; right: 25px; bottom: 22px; font-size: 18px; opacity: .65; }
+  </style>
+</head>
+<body>
+  <!-- แก้ข้อความ/บริษัท/วันที่ได้ตรงนี้ -->
+  <section class="slide blue center active">
+    <div class="tag">Welcome</div>
+    <h1>Welcome to<br><span class="company">Our Company</span></h1>
+    <p>ABC Corporation</p>
+    <div class="date">7 October 2026</div>
+  </section>
+
+  <section class="slide light center">
+    <div class="tag">Company News</div>
+    <h2>ข่าวสารบริษัท</h2>
+    <p>อัปเดตข่าวสาร กิจกรรม และประกาศสำคัญ</p>
+    <p class="company">Information • Activity • Announcement</p>
+  </section>
+
+  <section class="slide dark center">
+    <div class="badge">SAFETY FIRST</div>
+    <h2>Safety Announcement</h2>
+    <p>Safety starts with all of us.</p>
+    <p>ขอบคุณที่ร่วมกันสร้างพื้นที่ทำงานที่ปลอดภัย</p>
+  </section>
+
+  <section class="slide blue center">
+    <div class="tag">Thank You</div>
+    <h1>Have a great day</h1>
+    <p>Thank you for visiting our company.</p>
+  </section>
+
+  <div class="progress" id="progress"></div>
+  <div class="counter" id="counter"></div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const counter = document.getElementById('counter');
+    const progress = document.getElementById('progress');
+    const slideDuration = 10000; // 10 วินาทีต่อหน้า
+    let current = 0;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === index));
+      counter.textContent = `${index + 1} / ${slides.length}`;
+      progress.style.transition = 'none';
+      progress.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        progress.style.transition = `width ${slideDuration}ms linear`;
+        progress.style.width = '100%';
+      }));
+    }
+
+    showSlide(current);
+    setInterval(() => {
+      current = (current + 1) % slides.length;
+      showSlide(current);
+    }, slideDuration);
+  </script>
+</body>
+</html>
