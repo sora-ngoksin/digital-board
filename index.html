@@ -4,415 +4,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Digital Board Player</title>
-
 <style>
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #000;
-  font-family: Arial, Tahoma, sans-serif;
-}
-
-#player {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background: #000;
-}
-
-.slide {
-  position: absolute;
-  inset: 0;
-  display: none;
-  background-size: cover;
-  background-position: center;
-}
-
-.slide.active {
-  display: block;
-}
-
-.el {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform:
-    translate(
-      calc(-50% + var(--x, 0px)),
-      calc(-50% + var(--y, 0px))
-    );
-  z-index: var(--z, 3);
-}
-
-.textEl {
-  width: var(--tw, 86%);
-  text-align: var(--align, center);
-  color: var(--color, #fff);
-  font-family: var(--font, Arial);
-  font-size: var(--fs, 40px);
-  font-weight: var(--weight, 400);
-  font-style: var(--style, normal);
-  text-decoration: var(--deco, none);
-  white-space: pre-wrap;
-  line-height: var(--lh, 1.25);
-  letter-spacing: var(--ls, 0px);
-}
-
-.imageEl,
-.videoEl {
-  width: var(--w, 45%);
-  max-height: 70%;
-  object-fit: contain;
-}
-
-.audioEl {
-  width: var(--w, 70%);
-}
-
-.progress {
-  position: absolute;
-  z-index: 100;
-  left: 0;
-  bottom: 0;
-  width: 0;
-  height: 5px;
-  background: #55b9ff;
-}
-
-.counter {
-  position: absolute;
-  right: 3%;
-  bottom: 2%;
-  z-index: 101;
-  color: white;
-  font-size: 14px;
-  opacity: .7;
-}
-
-.status {
-  position: absolute;
-  left: 2%;
-  top: 2%;
-  z-index: 102;
-  padding: 7px 10px;
-  border-radius: 6px;
-  background: #0009;
-  color: white;
-  font-size: 12px;
-}
-
-.status.ok {
-  color: #7ee787;
-}
-
-.status.bad {
-  color: #ff8b8b;
-}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,Tahoma,sans-serif}#player{position:relative;width:100vw;height:100vh;overflow:hidden;background:#000}.slide{position:absolute;inset:0;display:none;background-size:cover;background-position:center}.slide.active{display:block}.el{position:absolute;left:50%;top:50%;z-index:3}.textEl{white-space:pre-wrap}.imageEl,.videoEl{max-height:70%;object-fit:contain}.status{position:absolute;z-index:102;left:2%;top:2%;padding:7px 10px;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font-size:12px}.ok{color:#7ee787}.bad{color:#ff8b8b}.progress{position:absolute;left:0;bottom:0;width:0;height:5px;background:#55b9ff;z-index:100}.counter{position:absolute;right:3%;bottom:2%;z-index:101;color:#fff;font-size:14px;opacity:.7}
 </style>
 </head>
-
 <body>
-
-<main id="player">
-
-  <div id="status" class="status">
-    Loading Digital Board...
-  </div>
-
-  <div id="progress" class="progress"></div>
-
-  <div id="counter" class="counter"></div>
-
-</main>
-
+<main id="player"><div id="status" class="status">Starting Player...</div><div id="progress" class="progress"></div><div id="counter" class="counter"></div></main>
 <script>
-
-/* JSON อยู่ใน GitHub Pages เดียวกัน */
-const JSON_URL = './digital-board-v2-project.json';
-
-/* ตรวจไฟล์ใหม่ทุก 15 วินาที */
-const CHECK_INTERVAL = 15000;
-
-const player = document.getElementById('player');
-const status = document.getElementById('status');
-const progress = document.getElementById('progress');
-const counter = document.getElementById('counter');
-
-let data = null;
-let activeSlide = 0;
-let timer = null;
-let lastVersion = '';
-
-function createElement(e) {
-
-  let n;
-
-  if (e.type === 'text') {
-
-    n = document.createElement('div');
-    n.className = 'el textEl';
-    n.textContent = e.text || '';
-
-    n.style.setProperty('--tw', (e.tw || 86) + '%');
-    n.style.setProperty('--align', e.align || 'center');
-    n.style.setProperty('--color', e.color || '#fff');
-    n.style.setProperty('--font', e.font || 'Arial');
-    n.style.setProperty('--fs', (e.fs || 40) + 'px');
-    n.style.setProperty('--weight', e.weight || 400);
-    n.style.setProperty('--style', e.style || 'normal');
-    n.style.setProperty('--deco', e.deco || 'none');
-    n.style.setProperty('--lh', e.lh || 1.25);
-    n.style.setProperty('--ls', (e.ls || 0) + 'px');
-
-  } else if (e.type === 'image') {
-
-    n = document.createElement('img');
-    n.className = 'el imageEl';
-    n.src = e.src || '';
-
-  } else if (e.type === 'video') {
-
-    n = document.createElement('video');
-    n.className = 'el videoEl';
-    n.src = e.src || '';
-
-    n.autoplay = true;
-    n.loop = true;
-    n.muted = true;
-    n.playsInline = true;
-
-  } else {
-
-    n = document.createElement('audio');
-    n.className = 'el audioEl';
-    n.src = e.src || '';
-
-    n.autoplay = true;
-    n.loop = true;
-  }
-
-  n.style.setProperty('--x', (e.x || 0) + 'px');
-  n.style.setProperty('--y', (e.y || 0) + 'px');
-  n.style.setProperty('--z', e.z || 3);
-
-  if (e.type !== 'text') {
-    n.style.setProperty('--w', (e.w || 45) + '%');
-  }
-
-  return n;
+(function(){
+var JSON_URL='./digital-board-v2-project.json';
+var CHECK_INTERVAL=15000;
+var player=document.getElementById('player');
+var status=document.getElementById('status');
+var progress=document.getElementById('progress');
+var counter=document.getElementById('counter');
+var data=null,activeSlide=0,timer=null,lastVersion='';
+function px(v){return (v||0)+'px'}
+function createElementItem(e){
+ var n=document.createElement(e.type==='text'?'div':e.type==='image'?'img':e.type==='video'?'video':'audio');
+ n.className='el '+(e.type==='text'?'textEl':e.type==='image'?'imageEl':e.type==='video'?'videoEl':'audioEl');
+ if(e.type==='text'){
+  n.innerText=e.text||'';n.style.width=(e.tw||86)+'%';n.style.textAlign=e.align||'center';n.style.color=e.color||'#fff';n.style.fontFamily=e.font||'Arial';n.style.fontSize=(e.fs||40)+'px';n.style.fontWeight=e.weight||400;n.style.fontStyle=e.style||'normal';n.style.textDecoration=e.deco||'none';n.style.lineHeight=e.lh||1.25;n.style.letterSpacing=(e.ls||0)+'px';
+ }else{
+  n.src=e.src||'';n.style.width=(e.w||45)+'%';if(e.type==='video'){n.autoplay=true;n.loop=true;n.muted=true;n.setAttribute('playsinline','playsinline')}if(e.type==='audio'){n.autoplay=true;n.loop=true}
+ }
+ n.style.marginLeft='-50%';n.style.transform='translate('+px(e.x)+','+px(e.y)+')';n.style.zIndex=e.z||3;return n;
 }
-
-
-function render() {
-
-  if (!data || !data.slides || !data.slides.length) {
-    return;
-  }
-
-  clearTimeout(timer);
-
-  player
-    .querySelectorAll('.slide')
-    .forEach(n => n.remove());
-
-
-  data.slides.forEach((slide, index) => {
-
-    const page = document.createElement('section');
-
-    page.className =
-      'slide' + (index === activeSlide ? ' active' : '');
-
-    page.style.backgroundColor =
-      slide.bg || '#0067b8';
-
-    if (slide.bgImage) {
-      page.style.backgroundImage =
-        'url(' + slide.bgImage + ')';
-    }
-
-    (slide.elements || []).forEach(e => {
-
-      if (!e.hidden) {
-        page.appendChild(createElement(e));
-      }
-
-    });
-
-    player.insertBefore(page, status);
-
-  });
-
-
-  counter.textContent =
-    (activeSlide + 1) +
-    ' / ' +
-    data.slides.length;
-
-
-  const seconds =
-    Math.max(
-      1,
-      Number(data.slides[activeSlide].duration) || 10
-    );
-
-
-  progress.style.transition = 'none';
-  progress.style.width = '0';
-
-
-  requestAnimationFrame(() => {
-
-    requestAnimationFrame(() => {
-
-      progress.style.transition =
-        'width ' + seconds + 's linear';
-
-      progress.style.width = '100%';
-
-    });
-
-  });
-
-
-  timer = setTimeout(() => {
-
-    activeSlide =
-      (activeSlide + 1) %
-      data.slides.length;
-
-    render();
-
-  }, seconds * 1000);
-
+function render(){
+ if(!data||!data.slides||!data.slides.length)return;
+ if(timer)clearTimeout(timer);
+ var old=player.querySelectorAll('.slide'),j;for(j=0;j<old.length;j++)player.removeChild(old[j]);
+ for(var i=0;i<data.slides.length;i++){
+  var s=data.slides[i],d=document.createElement('section');d.className='slide'+(i===activeSlide?' active':'');d.style.backgroundColor=s.bg||'#0067b8';if(s.bgImage)d.style.backgroundImage='url('+s.bgImage+')';
+  var els=s.elements||[];for(j=0;j<els.length;j++){if(!els[j].hidden)d.appendChild(createElementItem(els[j]))}player.insertBefore(d,status);
+ }
+ counter.innerHTML=(activeSlide+1)+' / '+data.slides.length;
+ var seconds=parseInt(data.slides[activeSlide].duration,10)||10;if(seconds<1)seconds=1;progress.style.transition='none';progress.style.width='0';setTimeout(function(){progress.style.transition='width '+seconds+'s linear';progress.style.width='100%'},50);
+ timer=setTimeout(function(){activeSlide=(activeSlide+1)%data.slides.length;render()},seconds*1000);
 }
-
-
-async function loadBoard() {
-
-  try {
-
-    status.textContent =
-      data
-        ? '● Checking Update...'
-        : '● Loading Board...';
-
-
-    const separator =
-      JSON_URL.includes('?')
-        ? '&'
-        : '?';
-
-
-    const response =
-      await fetch(
-        JSON_URL +
-        separator +
-        '_=' +
-        Date.now(),
-        {
-          cache: 'no-store'
-        }
-      );
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        'HTTP ' + response.status
-      );
-
-    }
-
-
-    const next =
-      await response.json();
-
-
-    if (
-      !next.slides ||
-      !next.slides.length
-    ) {
-
-      throw new Error(
-        'ไม่พบ Slides ใน JSON'
-      );
-
-    }
-
-
-    const version =
-      next.savedAt ||
-      JSON.stringify(next).length;
-
-
-    if (version !== lastVersion) {
-
-      data = next;
-
-      lastVersion = version;
-
-      activeSlide = 0;
-
-      render();
-
-    }
-
-
-    status.textContent =
-      '● Online • ' +
-      next.slides.length +
-      ' slides';
-
-    status.className =
-      'status ok';
-
-
-  } catch (error) {
-
-    status.textContent =
-      '● Load error: ' +
-      error.message;
-
-    status.className =
-      'status bad';
-
-    console.error(
-      'Digital Board error:',
-      error
-    );
-
-  }
-
+function loadBoard(){
+ status.innerHTML=data?'Checking Update...':'Loading Board...';
+ var xhr=new XMLHttpRequest();
+ xhr.open('GET',JSON_URL+'?t='+new Date().getTime(),true);
+ xhr.onreadystatechange=function(){
+  if(xhr.readyState!==4)return;
+  if(xhr.status>=200&&xhr.status<300){
+   try{
+    var next=JSON.parse(xhr.responseText);if(!next.slides||!next.slides.length)throw new Error('No slides');
+    var version=next.savedAt||String(xhr.responseText.length);if(version!==lastVersion){data=next;lastVersion=version;activeSlide=0;render()}
+    status.innerHTML='Online - '+next.slides.length+' slides';status.className='status ok';
+   }catch(err){status.innerHTML='JSON error: '+err.message;status.className='status bad'}
+  }else{status.innerHTML='Load error HTTP '+xhr.status;status.className='status bad'}
+ };
+ xhr.onerror=function(){status.innerHTML='Network error';status.className='status bad'};
+ xhr.send(null);
 }
-
-
-/* โหลดครั้งแรก */
-loadBoard();
-
-
-/* ตรวจหา JSON ใหม่ */
-setInterval(
-  loadBoard,
-  CHECK_INTERVAL
-);
-
-
-/* Double Click = Full Screen */
-document.body.ondblclick = () => {
-
-  document
-    .documentElement
-    .requestFullscreen?.();
-
-};
-
+loadBoard();setInterval(loadBoard,CHECK_INTERVAL);
+})();
 </script>
-
 </body>
 </html>
